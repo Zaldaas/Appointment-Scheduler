@@ -1,2 +1,2 @@
 # Appointment-Scheduler
-A clean and intuitive appointment scheduler and management
+A clean and intuitive appointment scheduler and manager
