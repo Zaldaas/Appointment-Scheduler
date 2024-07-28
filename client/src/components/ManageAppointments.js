@@ -77,7 +77,7 @@ function ManageAppointments() {
         <form onSubmit={handleSave}>
           <input type="text" name="name" value={editingAppointment.name} onChange={handleChange} placeholder="Name" readOnly />
           <input type="text" name="employee_id" value={editingAppointment.employee_id} onChange={handleChange} placeholder="Employee ID" readOnly />
-          <input type="email" name="email" value={editingAppointment.email} onChange={handleChange} placeholder="Email" required />
+          <input type="email" name="email" value={editingAppointment.email} onChange={handleChange} placeholder="Email" readOnly />
           <input type="date" name="date" value={editingAppointment.date} onChange={handleChange} required />
           <input type="time" name="time" value={editingAppointment.time} onChange={handleChange} required />
           <button type="submit">Save</button>
