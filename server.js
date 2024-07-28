@@ -1,6 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const nodemailer = require('nodemailer');
+const path = require('path');
 const app = express();
 const port = 3001;
 
@@ -131,6 +132,18 @@ app.delete('/api/appointments/:id', (req, res) => {
       res.json({ message: 'Appointment deleted successfully' });
     });
   });
+});
+
+// Serve static files from the React app if built
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Fallback handler for non-API routes in development
+app.get('*', (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  } else {
+    res.status(404).send('Not Found');
+  }
 });
 
 app.listen(port, () => {

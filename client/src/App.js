@@ -1,14 +1,20 @@
-import React from 'react';
-import BookingForm from './components/BookingForm';
-import ManageAppointments from './components/ManageAppointments';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Homepage from "./components/Homepage";
+import BookingForm from "./components/BookingForm";
+import ManageAppointments from "./components/ManageAppointments";
 
 function App() {
   return (
-    <div>
-      <h1>Appointment Scheduler</h1>
-      <BookingForm />
-      <ManageAppointments />
-    </div>
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/book" element={<BookingForm />} />
+        <Route path="/manage" element={<ManageAppointments />} />
+      </Routes>
+    </Router>
   );
 }
 
