@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Appointment Scheduler</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .appointment-form, .appointments-list {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .appointment-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cancel-btn {
+            background-color: #e74c3c;
+        }
+        .cancel-btn:hover {
+            background-color: #c0392b;
+        }
+        .no-appointments {
+            color: #7f8c8d;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Appointment Scheduler</h1>
+    
+    <div class="container">
+        <div class="appointment-form">
+            <h2>Book an Appointment</h2>
+            <form id="appointment-form">
+                <label for="name">Name:</label>
+                <input type="text" id="name" required>
+                
+                <label for="date">Date:</label>
+                <input type="date" id="date" required>
+                
+                <label for="time">Time:</label>
+                <select id="time" required>
+                    <option value="">Select a time</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                </select>
+                
+                <button type="submit">Book Appointment</button>
+            </form>
+        </div>
+        
+        <div class="appointments-list">
+            <h2>Your Appointments</h2>
+            <div id="appointments-container">
+                <p class="no-appointments">No appointments scheduled yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const appointmentForm = document.getElementById('appointment-form');
+            const appointmentsContainer = document.getElementById('appointments-container');
+            
+            // Load appointments from localStorage
+            let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+            
+            // Display appointments on page load
+            displayAppointments();
+            
+            // Handle form submission
+            appointmentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const date = document.getElementById('date').value;
+                const time = document.getElementById('time').value;
+                
+                // Check if appointment already exists
+                const appointmentExists = appointments.some(appointment => 
+                    appointment.date === date && appointment.time === time
+                );
+                
+                if (appointmentExists) {
+                    alert('This time slot is already booked. Please select another time.');
+                    return;
+                }
+                
+                // Add new appointment
+                const newAppointment = {
+                    id: Date.now(), // unique ID using timestamp
+                    name,
+                    date,
+                    time
+                };
+                
+                appointments.push(newAppointment);
+                
+                // Save to localStorage
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                
+                // Reset form
+                appointmentForm.reset();
+                
+                // Update display
+                displayAppointments();
+            });
+            
+            // Function to display appointments
+            function displayAppointments() {
+                if (appointments.length === 0) {
+                    appointmentsContainer.innerHTML = '<p class="no-appointments">No appointments scheduled yet.</p>';
+                    return;
+                }
+                
+                // Sort appointments by date and time
+                appointments.sort((a, b) => {
+                    if (a.date === b.date) {
+                        return a.time.localeCompare(b.time);
+                    }
+                    return a.date.localeCompare(b.date);
+                });
+                
+                let html = '';
+                appointments.forEach(appointment => {
+                    // Format date for display
+                    const formattedDate = new Date(appointment.date).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    
+                    // Format time for display
+                    const formattedTime = formatTime(appointment.time);
+                    
+                    html += `
+                        <div class="appointment-item">
+                            <div>
+                                <strong>${appointment.name}</strong><br>
+                                ${formattedDate} at ${formattedTime}
+                            </div>
+                            <button class="cancel-btn" data-id="${appointment.id}">Cancel</button>
+                        </div>
+                    `;
+                });
+                
+                appointmentsContainer.innerHTML = html;
+                
+                // Add event listeners to cancel buttons
+                document.querySelectorAll('.cancel-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        cancelAppointment(id);
+                    });
+                });
+            }
+            
+            // Function to cancel an appointment
+            function cancelAppointment(id) {
+                if (confirm('Are you sure you want to cancel this appointment?')) {
+                    appointments = appointments.filter(appointment => appointment.id !== id);
+                    localStorage.setItem('appointments', JSON.stringify(appointments));
+                    displayAppointments();
+                }
+            }
+            
+            // Helper function to format time
+            function formatTime(time) {
+                const [hours, minutes] = time.split(':');
+                const hour = parseInt(hours);
+                return hour >= 12 ? `${hour === 12 ? 12 : hour - 12}:${minutes} PM` : `${hour}:${minutes} AM`;
+            }
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').min = today;
+        });
+    </script>
+</body>
+</html>
